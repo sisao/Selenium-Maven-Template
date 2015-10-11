@@ -1,24 +1,27 @@
 package com.lazerycode.selenium;
 
 import com.lazerycode.selenium.config.WebDriverThread;
-import com.lazerycode.selenium.listeners.ScreenshotListener;
+import com.lazerycode.selenium.listeners.ScreenshotRule;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.openqa.selenium.WebDriver;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.AfterSuite;
-import org.testng.annotations.BeforeSuite;
-import org.testng.annotations.Listeners;
+
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-@Listeners(ScreenshotListener.class)
 public class DriverFactory {
+
+    @Rule
+    public ScreenshotRule screenshotRule = new ScreenshotRule();
 
     private static List<WebDriverThread> webDriverThreadPool = Collections.synchronizedList(new ArrayList<WebDriverThread>());
     private static ThreadLocal<WebDriverThread> driverThread;
 
-    @BeforeSuite
+    @BeforeClass
     public static void instantiateDriverObject() {
         driverThread = new ThreadLocal<WebDriverThread>() {
             @Override
@@ -34,12 +37,12 @@ public class DriverFactory {
         return driverThread.get().getDriver();
     }
 
-    @AfterMethod
-    public static void clearCookies() throws Exception {
+    @After
+    public void clearCookies() throws Exception {
         getDriver().manage().deleteAllCookies();
     }
 
-    @AfterSuite
+    @AfterClass
     public static void closeDriverObjects() {
         for (WebDriverThread webDriverThread : webDriverThreadPool) {
             webDriverThread.quitDriver();
